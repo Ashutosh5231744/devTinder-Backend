@@ -15,7 +15,7 @@ authRouter.post("/signup", async (req, res) => {
       gender,
       about,
       skills,
-      photoUrl
+      photoUrl,
     } = req.body;
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -29,20 +29,19 @@ authRouter.post("/signup", async (req, res) => {
       gender,
       about,
       skills,
-      photoUrl
+      photoUrl,
     });
 
     const savedUser = await user.save();
 
     res.json({
       message: "User Added Successfully",
-      data: savedUser
+      data: savedUser,
     });
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
 });
-
 
 // LOGIN API
 authRouter.post("/login", async (req, res) => {
@@ -60,8 +59,12 @@ authRouter.post("/login", async (req, res) => {
     if (isPasswordValid) {
       const token = await user.getJWT();
 
+      // 🔥 FINAL FIX
       res.cookie("token", token, {
-        httpOnly: true
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite:
+          process.env.NODE_ENV === "production" ? "none" : "lax",
       });
 
       res.send("Login Successful");
@@ -73,10 +76,15 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
+// LOGOUT API
 authRouter.post("/logout", async (req, res) => {
   try {
     res.cookie("token", null, {
-      expires: new Date(Date.now())
+      expires: new Date(Date.now()),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite:
+        process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
     res.send("Logout Successful");
