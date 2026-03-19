@@ -9,16 +9,21 @@ const http = require("http");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
-const userRouter = require("./routes/user");   // 👈 NEW
+const userRouter = require("./routes/user");
 
 const app = express();
 
+// Middlewares
 app.use(express.json());
 app.use(cookieParser());
 
+// 🔥 FINAL CORS FIX (LOCAL + PRODUCTION)
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://devtinder-frontend-eta.vercel.app",
+    ],
     credentials: true,
   })
 );
@@ -27,8 +32,9 @@ app.use(
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
-app.use("/", userRouter);   // 👈 NEW
+app.use("/", userRouter);
 
+// SERVER
 const server = http.createServer(app);
 
 connectDB()
@@ -42,5 +48,5 @@ connectDB()
     });
   })
   .catch((err) => {
-    console.error("Database cannot be connected!!");
+    console.error("Database cannot be connected!!", err);
   });
